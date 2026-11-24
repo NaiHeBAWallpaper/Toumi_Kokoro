@@ -132,7 +132,7 @@
 				"condition" : "mouseactions.value == true",
 				"index" : 11,
 				"order" : 111,
-				"text" : "Headpatting",
+				"text" : "Head and Face Patting",
 				"type" : "bool",
 				"value" : true
 			},

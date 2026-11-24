@@ -22,8 +22,6 @@ let currentVoiceline = 1;
 let mouseSelect = -1;
 let trackerID = -1;
 let untrackerID = -1;
-let patToggle = false; // false=Pat/PatEnd, true=Pat2/PatEnd2
-let currentPatEnd = 'PatEnd_01_M'; // 记录本次点击对应的结束动画
 let EPointX, EPointY;
 let TPoint, TEye;
 let headpatOrigin;
@@ -162,7 +160,8 @@ const AUDIO_DETAIL = [
 ];
 
 const HITBOX = {
-	headpat: { xMin: 1040, xMax: 1450, yMin: 130, yMax: 390 },
+	headpat: { xMin: 1040, xMax: 1450, yMin: 130, yMax: 390, start: 'Pat_01_M', end: 'PatEnd_01_M' },
+	facepat: { xMin: 1070, xMax: 1485, yMin: 390, yMax: 665, start: 'Pat2_01_M', end: 'PatEnd2_01_M' },
 	voiceline: { xMin: 1000, xMax: 1570, yMin: 800, yMax: 1500 }
 };
 
@@ -303,19 +302,13 @@ function t(n, side) {
 
 // -1 = [No Entry], 1 = Headpat, 2 = Voiceline, 3 = Eye Track
 function pressedMouse(x, y) {
-	tx = t(x, 'x');
-	ty = t(y, 'y');
-	if (tx > HITBOX.headpat.xMin && tx < HITBOX.headpat.xMax && ty > HITBOX.headpat.yMin && ty < HITBOX.headpat.yMax && mouseOptions.headpatting) {
-		if (!patToggle) {
-			spineData.state.setAnimation(1, 'Pat_01_M', false);
-			currentPatEnd = 'PatEnd_01_M';
-		} else {
-			spineData.state.setAnimation(1, 'Pat2_01_M', false);
-			currentPatEnd = 'PatEnd2_01_M';
-		}
-		patToggle = !patToggle;
+	const tx = t(x, 'x');
+	const ty = t(y, 'y');
+	const pat = [HITBOX.facepat, HITBOX.headpat].find(box => tx >= box.xMin && tx < box.xMax && ty >= box.yMin && ty < box.yMax);
+	if (pat && mouseOptions.headpatting) {
+		spineData.state.setAnimation(1, pat.start, false);
 		spineData.state.setEmptyAnimation(2, 0);
-		headpatOrigin = { x, y };
+		headpatOrigin = { x, y, endAnimation: pat.end };
 		mouseSelect = 1;
 	}
 	else if (tx > HITBOX.voiceline.xMin && tx < HITBOX.voiceline.xMax && ty > HITBOX.voiceline.yMin && ty < HITBOX.voiceline.yMax && mouseOptions.voicelines) {
@@ -414,10 +407,11 @@ function movedMouse(x, y) {
 function releasedMouse() {
 	switch (mouseSelect) {
 		case 1: {
+			const { endAnimation } = headpatOrigin;
 			headpatOrigin = null;
 			headpatTarget.set(0, 0);
 			const state = spineData.state;
-			const motion = state.setAnimation(1, currentPatEnd, false);
+			const motion = state.setAnimation(1, endAnimation, false);
 			state.setEmptyAnimation(2, 0);
 			state.addEmptyAnimation(1, 0.5, motion.animationEnd);
 			state.addEmptyAnimation(2, 0.5, 0);

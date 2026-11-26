@@ -56,3 +56,11 @@ body {
   border-right-color: rgba(255, 255, 255, 0.87);
   */
 }
+
+.textbox:lang(zh-Hant) {
+  font-family: 'Microsoft JhengHei', NotoSans, sans-serif;
+}
+
+.textbox:lang(ko) {
+  font-family: 'Malgun Gothic', NotoSans, sans-serif;
+}
